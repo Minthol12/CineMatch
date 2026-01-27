@@ -1,8 +1,8 @@
 const moviePool = [
     // --- ORIGINAL 6 (Kept your original Unsplash links) ---
-    { name: "DARK", origin: "Germany", year: "2017", genre: "Sci-Fi", img: "https://images.unsplash.com/photo-1505672678657-cc7037095e60?w=600" },
+    { name: "DARK", origin: "Germany", year: "2017", genre: "Sci-Fi", audioEN: "Dark_EN.mp3", audioNative: "Dark_GER.mp3", img: "https://images.unsplash.com/photo-1505672678657-cc7037095e60?w=600" },
     { name: "SPIRITED AWAY", origin: "Japan", year: "2001", genre: "Anime", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600" },
-    { name: "INCEPTION", origin: "USA", year: "2010", genre: "Action", img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600" },
+    { name: "INCEPTION", origin: "USA", year: "2010", genre: "Action", audioEN: "Inception.mp3", img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600" },
     { name: "HOW TO SELL DRUGS ONLINE FAST", origin: "Germany", year: "2019", genre: "Comedy", img: "https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?w=600" },
     { name: "ATTACK ON TITAN", origin: "Japan", year: "2013", genre: "Anime", img: "https://images.unsplash.com/photo-1578632292335-df3abbb0d586?w=600" },
     { name: "RUN LOLA RUN", origin: "Germany", year: "1998", genre: "Thriller", img: "https://images.unsplash.com/photo-1541560052-5e137f229371?w=600" },
@@ -138,13 +138,27 @@ function normalize(text) {
 }
 
 function initGame() {
-    currentGame = moviePool[Math.floor(Math.random() * moviePool.length)];
+    // 1. Logic to prevent repeats
+    if (playedMovies.length === moviePool.length) playedMovies = [];
+    let available = moviePool.filter(m => !playedMovies.includes(m.name));
     
+    // 2. Pick and track movie
+    currentGame = available[Math.floor(Math.random() * available.length)];
+    playedMovies.push(currentGame.name);
+
+    // 3. Update UI Elements
     const img = document.getElementById('mysteryImage');
     img.src = currentGame.img;
     img.className = "blur-level-6";
 
+    // Fixes the "Loading" bug
     document.getElementById('starterHint').innerText = `ORIGIN: ${currentGame.origin}`;
+    
+    // Dynamic button text
+    const nativeBtn = document.querySelector(".audio-btn-native");
+    if (nativeBtn) nativeBtn.innerText = `🔊 ${currentGame.origin}`;
+
+    // 4. Reset State
     document.getElementById('hintBar').innerHTML = "";
     document.getElementById('movieInput').value = "";
     lives = 6;
@@ -197,13 +211,49 @@ function showModal(isWin) {
     document.getElementById('mysteryImage').className = "blur-level-1";
 }
 
-function closeModal() {
-    document.getElementById('resultModal').style.display = "none";
-    initGame();
+
+let playedMovies = []; 
+
+function initGame() {
+    // Reset if all movies seen
+    if (playedMovies.length === moviePool.length) {
+        playedMovies = []; 
+    }
+
+    // Filter out played movies
+    let availableMovies = moviePool.filter(m => !playedMovies.includes(m.name));
+    
+    // Pick from available list
+    currentGame = availableMovies[Math.floor(Math.random() * availableMovies.length)];
+    playedMovies.push(currentGame.name);
+    
+    // Rest of your original code...
+    const img = document.getElementById('mysteryImage');
+    img.src = currentGame.img;
+    img.className = "blur-level-6";
+    // ... etc
+
+    document.getElementById('starterHint').innerText = `ORIGIN: ${currentGame.origin}`;
 }
 
 function updateLives() {
     document.getElementById('livesDisplay').innerText = "⚡".repeat(lives);
+}
+let currentPlayingAudio = null; // Add this at the top with playedMovies
+
+function playAudio(type) {
+    if (currentPlayingAudio) {
+        currentPlayingAudio.pause();
+        currentPlayingAudio.currentTime = 0;
+    }
+
+    // Logic: If 'NATIVE', play audioNative; else play audioEN
+    let src = type === 'NATIVE' ? currentGame.audioNative : currentGame.audioEN;
+    
+    if (src) {
+        currentPlayingAudio = new Audio("audio/" + src);
+        currentPlayingAudio.play();
+    }
 }
 
 window.onload = initGame;
