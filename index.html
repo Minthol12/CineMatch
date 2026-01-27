@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CineMatch | Global Cinema</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="main-container">
+        <div class="glass-shell">
+            <header>
+                <div class="logo">CINE<span>MATCH</span></div>
+                <div id="livesDisplay" class="lives"></div>
+            </header>
+
+            <div class="image-wrapper">
+                <img src="" id="mysteryImage" class="blur-level-6">
+                <div id="starterHint" class="starter-hint">ORIGIN: LOADING...</div>
+            </div>
+
+            <div class="hint-bar" id="hintBar">
+                </div>
+
+            <div class="input-area">
+                <input type="text" id="movieInput" placeholder="Name the movie or show..." autocomplete="off">
+                <button onclick="checkMovie()" class="btn-primary">SUBMIT GUESS</button>
+            </div>
+            
+            <button class="btn-skip" onclick="initGame()">Skip this one</button>
+        </div>
+    </div>
+
+    <div id="resultModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle"></h2>
+            <p id="modalMessage"></p>
+            <button onclick="closeModal()" class="btn-primary">PLAY NEXT</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
