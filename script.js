@@ -1,5 +1,15 @@
+// --- 1. GLOBAL VARIABLES ---
+let correct = 0;
+let incorrect = 0;
+let lives = 6;
+let playedMovies = [];
+let currentGame;
+let currentPlayingAudio = null;
+let filteredPool = []; // New: Holds currently selected category
+
+// --- 2. MOVIE DATA (FULL LIST) ---
 const moviePool = [
-    // --- ORIGINAL 6 (Kept your original Unsplash links) ---
+    // --- ORIGINAL 6 ---
     { name: "DARK", origin: "Germany", year: "2017", genre: "Sci-Fi", audioEN: "Dark_EN.mp3", audioNative: "Dark_GER.mp3", img: "https://images.unsplash.com/photo-1505672678657-cc7037095e60?w=600" },
     { name: "SPIRITED AWAY", origin: "Japan", year: "2001", genre: "Anime", img: "https://images.unsplash.com/photo-1528360983277-13d401cdc186?w=600" },
     { name: "INCEPTION", origin: "USA", year: "2010", genre: "Action", audioEN: "Inception.mp3", img: "https://images.unsplash.com/photo-1536440136628-849c177e76a1?w=600" },
@@ -7,7 +17,7 @@ const moviePool = [
     { name: "ATTACK ON TITAN", origin: "Japan", year: "2013", genre: "Anime", img: "https://images.unsplash.com/photo-1578632292335-df3abbb0d586?w=600" },
     { name: "RUN LOLA RUN", origin: "Germany", year: "1998", genre: "Thriller", img: "https://images.unsplash.com/photo-1541560052-5e137f229371?w=600" },
 
-    // --- USA (Blockbusters & Classics) ---
+    // --- USA ---
     { name: "THE GODFATHER", origin: "USA", year: "1972", genre: "Crime", img: "https://tse4.mm.bing.net/th?q=The+Godfather+movie+scene&w=600" },
     { name: "PULP FICTION", origin: "USA", year: "1994", genre: "Crime", img: "https://tse4.mm.bing.net/th?q=Pulp+Fiction+movie+scene&w=600" },
     { name: "BREAKING BAD", origin: "USA", year: "2008", genre: "Drama", img: "https://tse4.mm.bing.net/th?q=Breaking+Bad+series+scene&w=600" },
@@ -55,7 +65,7 @@ const moviePool = [
     { name: "THE WIZARD OF OZ", origin: "USA", year: "1939", genre: "Fantasy", img: "https://tse4.mm.bing.net/th?q=Wizard+of+Oz+movie+scene&w=600" },
     { name: "GONE WITH THE WIND", origin: "USA", year: "1939", genre: "Romance", img: "https://tse4.mm.bing.net/th?q=Gone+with+the+Wind+scene&w=600" },
 
-    // --- JAPAN (Anime & Live Action) ---
+    // --- JAPAN ---
     { name: "AKIRA", origin: "Japan", year: "1988", genre: "Anime", img: "https://tse4.mm.bing.net/th?q=Akira+anime+scene&w=600" },
     { name: "MY NEIGHBOR TOTORO", origin: "Japan", year: "1988", genre: "Anime", img: "https://tse4.mm.bing.net/th?q=My+Neighbor+Totoro+scene&w=600" },
     { name: "YOUR NAME", origin: "Japan", year: "2016", genre: "Anime", img: "https://tse4.mm.bing.net/th?q=Your+Name+anime+scene&w=600" },
@@ -126,45 +136,56 @@ const moviePool = [
     { name: "MAD MAX", origin: "Australia", year: "1979", genre: "Action", img: "https://tse4.mm.bing.net/th?q=Mad+Max+1979+scene&w=600" },
     { name: "THE PIANO", origin: "Australia", year: "1993", genre: "Drama", img: "https://tse4.mm.bing.net/th?q=The+Piano+movie+scene&w=600" }
 ];
-let currentGame;
-let lives = 6;
 
-// NEW: This helps the game be less "strict"
+// --- 3. HELPER FUNCTIONS ---
 function normalize(text) {
     return text.toUpperCase()
-               .replace(/^(THE|A|AN)\s+/, "") // Removes "The ", "A ", "An " from start
-               .replace(/[:]/g, "")           // Removes colons
-               .trim();
+        .replace(/^(THE|A|AN)\s+/, "") 
+        .replace(/[:]/g, "") 
+        .trim();
+}
+
+function updateScoreboard() {
+    document.getElementById('scoreboard').innerText = `✅ ${correct} | ❌ ${incorrect}`;
+}
+
+function updateLives() {
+    const livesDisplay = document.getElementById('livesDisplay');
+    if(livesDisplay) livesDisplay.innerText = "⚡".repeat(lives);
+}
+
+// --- 4. CATEGORY & SELECTION LOGIC ---
+
+function setCategory(origin) {
+    playedMovies = []; 
+    // New: Explicit case-sensitive matching
+    if (origin === 'ALL') {
+        filteredPool = [...moviePool];
+    } else {
+        filteredPool = moviePool.filter(m => m.origin === origin);
+    }
+    initGame();
 }
 
 function initGame() {
-    // 1. Logic to prevent repeats
-    if (playedMovies.length === moviePool.length) playedMovies = [];
-    let available = moviePool.filter(m => !playedMovies.includes(m.name));
+    if (playedMovies.length >= filteredPool.length) playedMovies = [];
     
-    // 2. Pick and track movie
+    let available = filteredPool.filter(m => !playedMovies.includes(m.name));
     currentGame = available[Math.floor(Math.random() * available.length)];
+    
     playedMovies.push(currentGame.name);
+    
+    // THIS LINE FIXES THE HINTS:
+    document.getElementById('hintBar').innerHTML = ""; 
 
-    // 3. Update UI Elements
-    const img = document.getElementById('mysteryImage');
-    img.src = currentGame.img;
-    img.className = "blur-level-6";
-
-    // Fixes the "Loading" bug
+    document.getElementById('mysteryImage').src = currentGame.img;
     document.getElementById('starterHint').innerText = `ORIGIN: ${currentGame.origin}`;
     
-    // Dynamic button text
-    const nativeBtn = document.querySelector(".audio-btn-native");
-    if (nativeBtn) nativeBtn.innerText = `🔊 ${currentGame.origin}`;
-
-    // 4. Reset State
-    document.getElementById('hintBar').innerHTML = "";
-    document.getElementById('movieInput').value = "";
     lives = 6;
     updateLives();
 }
 
+// --- 5. GAMEPLAY LOGIC ---
 function checkMovie() {
     const input = document.getElementById('movieInput');
     const userGuess = normalize(input.value);
@@ -177,9 +198,13 @@ function checkMovie() {
     } else {
         lives--;
         updateDifficulty();
-        // Visual shake effect for wrong answer
-        document.querySelector('.glass-shell').classList.add('shake');
-        setTimeout(() => document.querySelector('.glass-shell').classList.remove('shake'), 500);
+        
+        // Visual shake effect
+        const shell = document.querySelector('.glass-shell');
+        if(shell) {
+            shell.classList.add('shake');
+            setTimeout(() => shell.classList.remove('shake'), 500);
+        }
         
         if (lives <= 0) showModal(false);
     }
@@ -187,11 +212,11 @@ function checkMovie() {
 }
 
 function updateDifficulty() {
-    document.getElementById('mysteryImage').className = `blur-level-${lives}`;
+    // REMOVED BLUR UPDATES HERE
     updateLives();
     
     const hintBar = document.getElementById('hintBar');
-    // More aggressive hinting to make it easier
+    // Progressive hints
     if (lives === 5) {
         hintBar.innerHTML += `<span class="hint-pill">📅 ${currentGame.year}</span>`;
     }
@@ -199,47 +224,28 @@ function updateDifficulty() {
         hintBar.innerHTML += `<span class="hint-pill">🎭 ${currentGame.genre}</span>`;
     }
     if (lives === 2) {
-        // Ultimate hint: Show the first letter
         hintBar.innerHTML += `<span class="hint-pill">🔤 Starts with: ${currentGame.name[0]}</span>`;
     }
 }
 
+// --- 6. MODAL & AUDIO ---
 function showModal(isWin) {
+    if (isWin) {
+        correct++;
+    } else {
+        incorrect++;
+    }
+    updateScoreboard();
+    
     document.getElementById('resultModal').style.display = "flex";
     document.getElementById('modalTitle').innerText = isWin ? "🏆 CORRECT" : "❌ OUT OF ENERGY";
     document.getElementById('modalMessage').innerText = `It was: ${currentGame.name}`;
-    document.getElementById('mysteryImage').className = "blur-level-1";
 }
 
-
-let playedMovies = []; 
-
-function initGame() {
-    // Reset if all movies seen
-    if (playedMovies.length === moviePool.length) {
-        playedMovies = []; 
-    }
-
-    // Filter out played movies
-    let availableMovies = moviePool.filter(m => !playedMovies.includes(m.name));
-    
-    // Pick from available list
-    currentGame = availableMovies[Math.floor(Math.random() * availableMovies.length)];
-    playedMovies.push(currentGame.name);
-    
-    // Rest of your original code...
-    const img = document.getElementById('mysteryImage');
-    img.src = currentGame.img;
-    img.className = "blur-level-6";
-    // ... etc
-
-    document.getElementById('starterHint').innerText = `ORIGIN: ${currentGame.origin}`;
+function closeModal() {
+    document.getElementById('resultModal').style.display = "none";
+    initGame();
 }
-
-function updateLives() {
-    document.getElementById('livesDisplay').innerText = "⚡".repeat(lives);
-}
-let currentPlayingAudio = null; // Add this at the top with playedMovies
 
 function playAudio(type) {
     if (currentPlayingAudio) {
@@ -247,8 +253,7 @@ function playAudio(type) {
         currentPlayingAudio.currentTime = 0;
     }
 
-    // Logic: If 'NATIVE', play audioNative; else play audioEN
-    let src = type === 'NATIVE' ? currentGame.audioNative : currentGame.audioEN;
+    let src = (type === 'EN') ? currentGame.audioEN : currentGame.audioNative;
     
     if (src) {
         currentPlayingAudio = new Audio("audio/" + src);
@@ -256,4 +261,8 @@ function playAudio(type) {
     }
 }
 
-window.onload = initGame;
+// --- 7. STARTUP ---
+window.onload = function() {
+    // Start with ALL categories by default
+    setCategory('ALL');
+};

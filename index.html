@@ -8,16 +8,27 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
+
+    <div id="side-menu">
+        <div class="menu-header">REGIONS</div>
+        <button onclick="setCategory('ALL')" class="side-btn active">🌍 ALL</button>
+        <button onclick="setCategory('US')" class="side-btn">🇺🇸 USA</button>
+        <button onclick="setCategory('Japan')" class="side-btn">🇯🇵 JAPAN</button>
+        <button onclick="setCategory('Germany')" class="side-btn">🇩🇪 GERMANY</button>
+        <button onclick="setCategory('France')" class="side-btn">🇫🇷 FRANCE</button>
+        <button onclick="setCategory('Australia')" class="side-btn">🇦🇺 AUSTRALIA</button>
+    </div>
     <div class="main-container">
         <div class="glass-shell">
             <header>
                 <div class="logo">CINE<span>MATCH</span></div>
+                <div id="scoreboard">✅ 0 | ❌ 0</div>
                 <div id="livesDisplay" class="lives"></div>
             </header>
 
             <div class="image-wrapper">
-                <img src="" id="mysteryImage" class="blur-level-6">
-                <div id="starterHint" class="starter-hint">ORIGIN: LOADING...</div>
+                <img src="" id="mysteryImage" src="" alt="Movie">
+                <div id="starterHint">ORIGIN: LOADING...</div>
             </div>
 
             <div class="hint-bar" id="hintBar">
